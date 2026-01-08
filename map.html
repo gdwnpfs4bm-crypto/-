@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Биосфера - Био-әлем картасы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: #00f0ff; /* Циан */
+            --secondary-glow: #00ff41; /* Зеленый */
+            --bg-dark: #050b14;
+            --panel-bg: rgba(12, 28, 48, 0.85);
+            --border-color: #2a5a75;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #000;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, #1a2a3a 0%, #000 100%);
+        }
+
+        /* Рамка планшета/интерфейса */
+        .tablet-container {
+            width: 1200px;
+            height: 700px;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png'), linear-gradient(135deg, #0d1b2a 0%, #050b14 100%);
+            border: 4px solid #3e4c5e;
+            border-radius: 20px;
+            position: relative;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 50px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Декоративные уголки */
+        .tablet-container::before, .tablet-container::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary-glow);
+            z-index: 10;
+        }
+        .tablet-container::before { top: 10px; left: 10px; border-right: none; border-bottom: none; border-top-left-radius: 15px; }
+        .tablet-container::after { bottom: 10px; right: 10px; border-left: none; border-top: none; border-bottom-right-radius: 15px; }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--primary-glow);
+            text-shadow: 0 0 10px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span { color: #fff; }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 240, 255, 0.1);
+            padding: 5px 15px;
+            border: 1px solid var(--primary-glow);
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ccc;
+            border: 2px solid #fff;
+        }
+
+        .user-info { font-size: 0.9rem; line-height: 1.2; }
+        .user-xp { color: var(--secondary-glow); font-weight: bold; }
+
+        /* MAIN CONTENT GRID */
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+        }
+
+        /* MAP AREA (LEFT) */
+        .map-area {
+            flex: 2;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(0, 240, 255, 0.05) 0%, transparent 70%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+
+        .map-title {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.2rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Стили для островов (заглушки для картинок) */
+        .island {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .island:hover { transform: scale(1.05); }
+        .island-visual {
+            width: 300px; /* Суретке байланысты өлшемді реттеңіз */
+            height: 260px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+            filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.5)); /* Неонды жарық */
+            transition: transform 0.3s ease; 
+        }
+        
+
+        .island-label {
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: 1px solid #555;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Позиционирование островов (как на картинке) */
+        .micro-world { top: 25%; left: 1%; }
+        .micro-world .island-visual { background-image: url('микро.png'); }
+
+        .botanic-garden { top: 1%; left: 35%; }
+        .botanic-garden .island-visual { background-image: url('бб.png'); }
+
+        .anatomy-corp { bottom: 1%; left: 30%; }
+        .anatomy-corp .island-visual { background-image: url('aa.png'); }
+
+        .genetics-tower { bottom: 20%; right: 2%; }
+        .genetics-tower .island-visual { background-image: url('гт.png'); }
+
+        /* Соединительные линии (SVG) */
+        .connections {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        /* Байланыс сызықтарының жаңа стилі */
+        .connections path {
+            fill: none;
+            stroke: rgba(0, 240, 255, 0.5); /* Неонды көк түс */
+            stroke-width: 3;
+            stroke-dasharray: 10, 15; /* Үзік сызық өлшемі */
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.8));
+            animation: flow 30s linear infinite; /* Энергия қозғалысы */
+        }
+
+        /* Сызық бойымен жылжыту анимациясы */
+        @keyframes flow {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* SIDEBAR (RIGHT) */
+        .sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .panel-header {
+            color: #8aa;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* Текущее задание */
+        .current-task {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--primary-glow);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+        }
+
+        .task-content {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .task-icon { font-size: 3rem; margin-bottom: 10px; color: var(--primary-glow); }
+        .task-title { font-size: 1.1rem; margin-bottom: 5px; }
+        .task-subtitle { color: #aaa; font-size: 0.9rem; }
+
+        .btn-start {
+            background: transparent;
+            color: var(--secondary-glow);
+            border: 2px solid var(--secondary-glow);
+            padding: 10px 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px var(--secondary-glow);
+            transition: all 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+        }
+        .btn-start:hover {
+            background: var(--secondary-glow);
+            color: #000;
+        }
+
+        /* Достижения */
+        .achievements-grid {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        .badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #222;
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        .badge.active { border-color: var(--primary-glow); color: var(--primary-glow); box-shadow: 0 0 10px var(--primary-glow); }
+        .badge.locked { opacity: 0.5; filter: grayscale(1); }
+
+        /* Анимации */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Аралдардың баяу жоғары-төмен қозғалуы */
+        @keyframes float {
+          0% { transform: translateY(0px); }
+           50% { transform: translateY(-15px); }
+           100% { transform: translateY(0px); }
+          }
+        
+        .island {
+            animation: float 4s ease-in-out infinite;
+          }
+          /* Әр арал әртүрлі уақытта қозғалуы үшін кезектестіру */
+          .botanic-garden { animation-delay: 1s; }
+          .anatomy-corp { animation-delay: 2s; }
+          .genetics-tower { animation-delay: 0.5s; }
+          
+          /* Панельдердің жалпы стилі */
+          .panel {
+            background: rgba(12, 45, 72, 0.6); /* Көгілдір тунық фон */
+            border: 1px solid #1faec9; /* Жіңішке неон жиек */
+            box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.2);
+            position: relative;
+            padding: 20px;
+            border-radius: 5px;
+          }
+          
+          /* Панельдің бұрыштарына декоративті элементтер қосу */
+          .panel::before {
+            content: "";
+             position: absolute;
+             top: -2px; left: -2px;
+             width: 15px; height: 15px;
+             border-top: 2px solid #00f0ff;
+             border-left: 2px solid #00f0ff;
+            }
+            
+            /* Тапсырма тақырыбы */
+          .task-title {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            font-size: 1rem;
+            margin-top: 10px;
+          }
+          .task-subtitle {
+            color: #00f0ff; /* Циан түсі */
+            font-weight: bold;
+            font-size: 1.1rem;
+          }
+          
+          /* БАСТАУ батырмасын суреттегідей жасау */
+          .btn-start {
+            width: 100%;
+            background: linear-gradient(180deg, #1faec9 0%, #0a4d68 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%); /* Қиғаш форма */
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          }
+
+          .btn-start:hover {
+              filter: brightness(1.2);
+              transform: scale(1.02);
+          }
+
+          /* Жетістіктер (Badges) стилі */
+          .badge {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: radial-gradient(circle, #0a4d68 0%, #050b14 100%);
+            border: 2px solid #1faec9;
+            box-shadow: 0 0 10px rgba(31, 174, 201, 0.5);
+          }
+
+          .badge.locked {
+            opacity: 0.4;
+            filter: grayscale(1);
+            border-color: #3e4c5e;
+          }
+
+          /* Белсенді жетістіктердің түстері */
+          .badge.active[data-type="blue"] { border-color: #00f0ff; color: #00f0ff; }
+          .badge.active[data-type="purple"] { border-color: #a020f0; color: #a020f0; }
+          .badge.active[data-type="green"] { border-color: #00ff41; color: #00ff41; }
+          .badge.active[data-type="orange"] { border-color: #ff8c00; color: #ff8c00; }
+    </style>
+</head>
+<body>
+
+    <div class="tablet-container">
+        <header>
+            <div class="logo">
+                🧬 <span>Биосфера</span>
+            </div>
+            <div class="user-profile">
+                <div class="user-avatar"></div>
+                <div class="user-info">
+                    <div>Асқар | Деңгей 5</div>
+                    <div class="user-xp">1200 XP</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="map-area">
+                <h2 class="map-title">Био-әлем картасы</h2>
+                
+                <svg class="connections" viewBox="0 0 1200 700" preserveAspectRatio="none">
+                  <path d="M 180 250 Q 350 80 520 120" />
+                  
+                  <path d="M 160 330 Q 200 550 350 580" />
+                  
+                  <path d="M 650 130 Q 950 150 1000 450" />
+                  
+                  <path d="M 520 620 Q 800 680 950 550" />
+              </svg>
+                
+                <div class="island micro-world">
+                    <div class="island-visual"></div> <div class="island-label">Микроәлем</div>
+                </div>
+
+                <div class="island botanic-garden">
+                    <div class="island-visual"></div>
+                    <div class="island-label">Ботаникалық бақ</div>
+                </div>
+
+                <div class="island anatomy-corp">
+                    <div class="island-visual"></div>
+                    <div class="island-label">Анатомия корпусы</div>
+                </div>
+
+                <div class="island genetics-tower">
+                    <div class="island-visual"></div>
+                    <div class="island-label">Генетика мұнарасы</div>
+                </div>
+            </section>
+
+            <aside class="sidebar">
+              <div class="panel current-task">
+                  <div class="panel-header">АҒЫМДАҒЫ ТАПСЫРМА</div>
+                  <div class="task-content">
+                      <div style="background: rgba(0,240,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px dashed #1faec9;">
+                          <div class="task-icon">🔬</div>
+                          <div class="task-title">Зертханалық жұмыс №3:</div>
+                          <div class="task-subtitle">Пияз жасушасын қарау</div>
+                      </div>
+                  </div>
+                  <button class="btn-start">БАСТАУ ></button>
+              </div>
+
+              <div class="panel achievements">
+                  <div class="panel-header">ЖЕТІСТІКТЕР</div>
+                  <div class="achievements-grid">
+                      <div class="badge active" data-type="blue">🔬</div>
+                      <div class="badge active" data-type="purple">🧬</div>
+                      <div class="badge active" data-type="green">🧪</div>
+                  </div>
+                  <br>
+                  <div class="achievements-grid">
+                      <div class="badge active" data-type="green">🌿</div>
+                      <div class="badge active" data-type="orange">🧠</div>
+                      <div class="badge active" data-type="blue">🌍</div>
+                  </div>
+              </div>
+          </aside>
+        </main>
+    </div>
+
+</body>
+</html>

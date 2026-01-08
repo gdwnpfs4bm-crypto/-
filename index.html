@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <title>Биосфера - Авторизация</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-glow: #00f0ff; /* Негізгі неон көк түс */
+            --error: #ff4d4d; /* Қате хабарламасының түсі */
+            --bg-dark: #050b14; /* Ең қара фон */
+            --panel-bg: rgba(16, 28, 45, 0.9); /* Панельдің жартылай мөлдір фоны */
+            --border-color: #2d4a66; /* Жиек түсі */
+            --grid-color: rgba(0, 240, 255, 0.08); /* Тордың түсі */
+            --star-color: rgba(255, 255, 255, 0.8); /* Жұлдыздардың түсі */
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Фондық эффекттер дұрыс көрсетілуі үшін */
+            position: relative; /* Фондық элементтерді позициялау үшін */
+            background-image: radial-gradient(circle at center, #1a2a3a 0%, var(--bg-dark) 100%);
+        }
+
+        /* ----- ЖАҢА ФОНДЫҚ ЭЛЕМЕНТТЕР ----- */
+
+        /* 1. Жер шарының контейнері (астыңғы жақта орналасуы) */
+        .world-container {
+            position: absolute;
+            bottom: -700px; /* Төменде тек жартысы көрінуі үшін */
+            width: 1000px;
+            height: 1000px;
+            border-radius: 50%;
+            z-index: 1;
+            perspective: 1000px;
+        }
+
+        /* 2. Жер шарының өзі */
+        .earth {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Solarsystemscope_texture_2k_earth_daymap.jpg/2560px-Solarsystemscope_texture_2k_earth_daymap.jpg');
+            background-size: cover;
+        
+        /* Жер шарының көлеңкесі мен неонды жарқырауы */
+            box-shadow: inset -20px -20px 50px #000, 
+                        0 0 50px rgba(0, 240, 255, 0.4);
+            filter: brightness(45%) contrast(110%); 
+            box-shadow: inset -20px -20px 80px #000, 
+                0 0 40px rgba(0, 240, 255, 0.2);
+            animation: rotateEarth 100s linear infinite; 
+            will-change: background-position;        
+        }
+
+        /* 3. Атмосфералық жарқырау (эффект үшін) */
+        .earth-glow {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            box-shadow: inset 10px 10px 50px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(0, 240, 255, 0.15);
+            z-index: 2;
+        }
+
+        /* Сағат тілімен айналу анимациясы */
+        @keyframes rotateEarth {
+            from { background-position: 0 0; }
+            to { background-position: -200% 0; } /* Текстураның жылжуы арқылы айналу эффекті */
+        }
+
+        /* 2. Жұлдызды аспан (Star Field) */
+        .star-field {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1; /* Ең артқы фон */
+        }
+
+        .star {
+            position: absolute;
+            background-color: var(--star-color);
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite alternate, moveStar 50s linear infinite;
+        }
+
+        /* Жұлдыздардың жыпылықтауы */
+        @keyframes twinkle {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Жұлдыздардың баяу қозғалуы */
+        @keyframes moveStar {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(200px, 200px); } /* Аздаған қозғалыс */
+        }
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 100;
+            margin-top: 1%; /* Экранның жоғарғы жағынан арақашықтық */
+        }
+
+        .top-logo-img {
+            width: 220px; /* Логотиптің қолайлы өлшемі */
+            height: auto;
+            filter: drop-shadow(0 0 15px var(--primary-glow)); /* Логотипке неонды жарқыл беру */
+            margin-bottom: 15px; /* Логотипті квадратқа сәл жақындату */
+            animation: floatLogo 6s ease-in-out infinite;
+            position: relative;
+            z-index: 101;
+        }
+
+        /* Логотипке арналған жеке баяу қалқу анимациясы */
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* ----- БАР БОЛҒАН СТИЛЬДЕР (қажет болса, өзгертіңіз) ----- */
+        .login-card {
+            width: 350px;
+            background: var(--panel-bg); /* Жартылай мөлдір панель фоны */
+            padding: 40px;
+            border: 2px solid var(--primary-glow);
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            backdrop-filter: blur(8px); /* Артқы фонды бұлдырату */
+            position: relative; /* Басқа фондардың үстінде тұруы үшін */
+            z-index: 10;
+        }
+        .logo { 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 2rem; 
+            color: var(--primary-glow); 
+            margin-bottom: 25px; 
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+        input {
+            width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color);
+            padding: 12px; color: white; margin-bottom: 15px; border-radius: 5px; outline: none;
+            box-sizing: border-box; font-size: 1rem;
+        }
+        input:focus { border-color: var(--primary-glow); box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+        .btn-login {
+            width: 100%; background: linear-gradient(90deg, #1faec9, #0a4d68);
+            color: white; border: none; padding: 15px; font-family: 'Orbitron', sans-serif;
+            cursor: pointer; clip-path: polygon(5% 0, 100% 0, 100% 70%, 95% 100%, 0 100%, 0 30%);
+            font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-login:hover { filter: brightness(1.2); }
+        #error-box {
+            color: var(--error); background: rgba(255, 77, 77, 0.1);
+            padding: 10px; border-radius: 5px; margin-bottom: 15px;
+            display: none; border: 1px solid var(--error);
+            font-size: 0.9rem;
+        }
+
+        /* Кейіпкерлердің ортақ стилі */
+        .scientist {
+            position: fixed; /* absolute-тан fixed-қа өзгерттік, экранға байлану үшін */
+            bottom: 0; /* Еденге тиіп тұруы үшін */
+            height: 70vh; /* Экран биіктігінің 70%-ы (өлшемді осы жерден реттеңіз) */
+            z-index: 5; /* Тордың үстінде, бірақ форманың артында не алдында болуын реттейді */
+            pointer-events: none;
+            filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.4));
+            animation: floatingScientist 4s ease-in-out infinite;
+        }
+
+        /* Қыз сол жақ бұрышқа */
+        .scientist-female {
+            left: 2%; /* Шеттен 2% қашықтық */
+        }
+
+        /* Жігіт оң жақ бұрышқа */
+        .scientist-male {
+            right: 2%; /* Шеттен 2% қашықтық */
+        }
+
+        /* Қалқу анимациясы */
+        @keyframes floatingScientist {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* Планшеттің ішінде көрінуі үшін контейнерді реттеу */
+        .tablet-container {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+    <img src="ж.png" alt="Scientist Female" class="scientist scientist-female">
+    <img src="м.png" alt="Scientist Male" class="scientist scientist-male">
+
+<body>
+    <div class="world-container">
+    <div class="earth"></div>
+    <div class="earth-glow"></div>
+</div>
+
+    <div class="star-field" id="starField"></div>
+    <div class="main-container">
+    <img src="лого.png" alt="Биосфера Лого" class="top-logo-img">
+    <div class="login-card">
+        <div class="logo">🌍 ЖҮЙЕГЕ КІРУ</div>
+        <div id="error-box">Қате! Логин немесе пароль дұрыс емес.</div>
+        
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Логин" required autocomplete="off">
+            <input type="password" id="password" placeholder="Құпия сөз" required>
+            <button type="submit" class="btn-login">ЖҮЙЕГЕ КІРУ</button>
+        </form>
+    </div>
+
+    <script>
+        // Жұлдыздарды генерациялау функциясы
+        function createStars() {
+            const starField = document.getElementById('starField');
+            for (let i = 0; i < 100; i++) { // 100 жұлдыз
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = star.style.height = `${Math.random() * 3 + 1}px`; // 1px-ден 4px-ке дейін
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 2}s`; // Әр жұлдыз әр уақытта жыпылықтайды
+                starField.appendChild(star);
+            }
+        }
+        createStars(); // Жұлдыздарды бір рет жасап аламыз
+
+        // Логин формасын тексеру логикасы (бұрынғыдай)
+        document.getElementById('loginForm').onsubmit = function(event) {
+            event.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const errorBox = document.getElementById('error-box');
+
+            if (u === "Asqar" && p === "12345") {
+                errorBox.style.display = "none";
+                alert("Рұқсат берілді! Картаға өтіп жатырсыз...");
+                window.location.replace("map.html"); 
+            } else {
+                errorBox.style.display = "block";
+                document.getElementById('password').value = "";
+            }
+            return false;
+        };
+    </script>
+</body>
+</html>
