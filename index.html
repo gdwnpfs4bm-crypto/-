@@ -208,6 +208,9 @@
     <img src="м.png" alt="Scientist Male" class="scientist scientist-male">
 
 <body>
+    <audio id="bgMusic" loop>
+        <source src="фон.mp3" type="audio/mp3">
+    </audio>
     <div class="world-container">
     <div class="earth"></div>
     <div class="earth-glow"></div>
@@ -260,6 +263,56 @@
             }
             return false;
         };
+        const bgMusic = document.getElementById('bgMusic');
+
+// 1. Бет жүктелгенде музыканың күйін қалпына келтіру
+    window.addEventListener('load', () => {
+    const isPlaying = localStorage.getItem('musicPlaying') === 'true';
+    const savedTime = localStorage.getItem('musicTime');
+
+    if (savedTime) {
+        bgMusic.currentTime = parseFloat(savedTime);
+    }
+
+    if (isPlaying) {
+        // Браузерлер автоматты музыка ойнатуға рұқсат бермеуі мүмкін
+        // Сондықтан пайдаланушы экранды бір рет басқанда музыка басталады
+        const startMusic = () => {
+            bgMusic.play().catch(e => console.log("Музыканы бастау үшін өзара әрекет керек"));
+            document.removeEventListener('click', startMusic);
+        };
+        document.addEventListener('click', startMusic);
+    }
+    });
+
+        // 2. Музыка ойнап тұрғанда оның уақытын әр секунд сайын сақтап отыру
+        bgMusic.addEventListener('timeupdate', () => {
+            localStorage.setItem('musicTime', bgMusic.currentTime);
+        });
+
+        // 3. Беттен кетерде (басқа сілтемеге өткенде) күйін соңғы рет сақтау
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                localStorage.setItem('musicTime', bgMusic.currentTime);
+            }
+        });
+
+        // 4. Егер сізде Toggle (қосу/өшіру) батырмасы болса, оның күйін сақтау
+        // Мұны тек Toggle батырмасы бар беттерге (мәзірде) қосыңыз
+        const bgmToggle = document.getElementById('bgmToggle'); // Сәйкес ID-ді тексеріңіз
+        if (bgmToggle) {
+            bgmToggle.addEventListener('change', function() {
+                localStorage.setItem('musicPlaying', this.checked);
+                if (this.checked) {
+                    bgMusic.play();
+                } else {
+                    bgMusic.pause();
+                }
+            });
+            
+            // Toggle күйін браузер жадына сай орнату
+            bgmToggle.checked = localStorage.getItem('musicPlaying') === 'true';
+        }
     </script>
 </body>
 </html>
