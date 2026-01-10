@@ -377,22 +377,317 @@
           .badge.active[data-type="purple"] { border-color: #a020f0; color: #a020f0; }
           .badge.active[data-type="green"] { border-color: #00ff41; color: #00ff41; }
           .badge.active[data-type="orange"] { border-color: #ff8c00; color: #ff8c00; }
+
+          /* Пайдаланушы профилінің контейнері */
+        .user-profile {
+            position: relative; /* Мәзір осыған қатысты орналасуы үшін */
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .user-profile:hover {
+            background: rgba(0, 240, 255, 0.2);
+        }
+
+        .user-name-trigger {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Ашылмалы мәзір стилі */
+        .user-dropdown {
+            position: absolute;
+            top: 55px; /* Профильдің астында тұруы үшін */
+            right: 0;
+            width: 180px;
+            background: var(--panel-bg);
+            border: 2px solid var(--primary-glow);
+            border-radius: 10px;
+            display: none; /* Әдепкі бойынша жасыру */
+            flex-direction: column;
+            padding: 10px 0;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
+        }
+
+        /* Мәзір ішіндегі сілтемелер */
+        .user-dropdown a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            display: block;
+        }
+
+        .user-dropdown a:hover {
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--primary-glow);
+            padding-left: 25px; /* Жылжу эффекті */
+        }
+
+        /* Мәзір ашық болғандағы класс */
+        .user-dropdown.show {
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sound-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 20px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        /* Switch (Ауыстырып-қосқыш) дизайны */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 18px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1a2a3a;
+            transition: .4s;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 12px; width: 12px;
+            left: 2px; bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--primary-glow);
+        }
+
+        input:checked + .slider { background-color: var(--primary-glow); }
+        input:checked + .slider:before { transform: translateX(16px); background-color: #000; }
+        /* Экранды жабатын қараңғы қабат */
+        .transition-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 0%, #000 100%);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* "Жарылу/Сорылу" анимациясы */
+        .portal-zoom {
+            animation: portalZoom 1s forwards cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        @keyframes portalZoom {
+            0% { transform: scale(1); filter: blur(0px) brightness(1); }
+            50% { filter: blur(10px) brightness(2); }
+            100% { transform: scale(5); filter: blur(20px) brightness(0); opacity: 0; }
+        }
+
+        /* Экранның шетінен бастап қараңғылануы */
+        .overlay-active {
+            opacity: 1;
+            background: #000;
+        }
+        /* Табтардың стилі */
+        .tabs-header {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #8aa;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            border-color: var(--primary-glow);
+            color: var(--primary-glow);
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        /* Контентті жасыру/көрсету */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s; }
+
+        /* Рейтинг тізімі */
+        .leader-list { font-size: 0.9rem; }
+        .leader-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .leader-item.top { color: var(--secondary-glow); }
+        .leader-item.me { background: rgba(0, 240, 255, 0.2); border-radius: 5px; font-weight: bold; }
+
+        /* Прогресс-бар */
+        .progress-bar-container { margin-bottom: 15px; font-size: 0.8rem; }
+        .progress-bg { height: 8px; background: #1a2a3a; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; background: var(--primary-glow); box-shadow: 0 0 10px var(--primary-glow); }
+
+        .task-check-list { list-style: none; font-size: 0.8rem; line-height: 1.8; }
+        .task-check-list .done { color: #8aa; }
+        .task-check-list .current { color: var(--primary-glow); font-weight: bold; }
+
+        .stat-info { font-size: 0.7rem; color: #555; text-align: center; margin-top: 10px; }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            margin: 10% auto;
+            padding: 30px;
+            border: 2px solid var(--primary-glow);
+            width: 500px;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.3);
+            animation: modalSlide 0.3s ease-out;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            color: #fff; font-size: 28px; cursor: pointer;
+        }
+
+        .modal-body { display: flex; gap: 20px; align-items: center; }
+
+        .item-icon-large {
+            font-size: 5rem;
+            background: rgba(0, 240, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--primary-glow);
+        }
+
+        .item-category { color: var(--secondary-glow); font-size: 0.9rem; margin-top: 5px; }
+        .item-stats { margin-top: 20px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 5px; }
+
+        .quick-inv-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: var(--panel-bg);
+            border: 2px solid var(--primary-glow);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+            text-decoration: none;
+            box-shadow: 0 0 15px var(--primary-glow);
+            transition: 0.3s;
+        }
+        .quick-inv-btn:hover { transform: scale(1.1); background: var(--primary-glow); }
     </style>
 </head>
 <body>
-
+    <a href="inventory.html" class="quick-inv-btn" title="Қоржын">🎒</a>
+    <div id="inventoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-body">
+            <div class="modal-visual">
+                <div id="itemIcon" class="item-icon-large">🔬</div>
+            </div>
+            <div class="modal-info">
+                <h2 id="itemName">Микроскоп</h2>
+                <p id="itemCategory" class="item-category">Құрал-сайман</p>
+                <hr style="border: 0.5px solid var(--border-color); margin: 15px 0;">
+                <p id="itemDescription">Бұл нысандардың бірнеше есе үлкейтілген кескінін алу үшін қолданылатын оптикалық құрал.</p>
+                <div class="item-stats">
+                    <span>Сиректігі: <b style="color: var(--primary-glow);">Жалпы</b></span>
+                    <span>Табылды: <b>05.01.2026</b></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <audio id="clickSound" src="клик.mp3" preload="auto"></audio>
+    <audio id="bgMusic" loop src="фон.mp3"></audio>
+    <div class="transition-overlay" id="portalOverlay"></div>
     <div class="tablet-container">
         <header>
             <div class="logo">
                 🧬 <span>Биосфера</span>
             </div>
-            <div class="user-profile">
-                <div class="user-avatar"></div>
-                <div class="user-info">
-                    <div>Асқар | Деңгей 5</div>
-                    <div class="user-xp">1200 XP</div>
-                </div>
+            <div class="user-profile" id="userProfile">
+            <div class="user-avatar"></div>
+            <div class="user-info">
+                <div class="user-name-trigger">Асқар | Деңгей 5 <span style="font-size: 0.7rem;">▼</span></div>
+                <div class="user-xp">1200 XP</div>
             </div>
+            
+            <div class="user-dropdown" id="userDropdown">
+                <a href="profile.html">👤 Жеке кабинет</a>
+                <div class="sound-control">
+                    <span>🔊 Эффектілер</span>
+                    <label class="switch">
+                        <input type="checkbox" id="sfxToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="sound-control">
+                    <span>🎵 Музыка</span>
+                    <label class="switch">
+                        <input type="checkbox" id="bgmToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <hr style="border: 0.5px solid var(--border-color); opacity: 0.3; margin: 5px 10px;">
+                <a href="settings.html">⚙️ Баптаулар</a>
+                <hr style="border: 0.5px solid var(--border-color); margin: 5px 0;">
+                <a href="help.html">❓ Көмек алу</a>
+                <a href="index.html" style="color: var(--error);">🚪 Шығу</a>
+            </div>
+
         </header>
 
         <main class="main-content">
@@ -430,35 +725,239 @@
             </section>
 
             <aside class="sidebar">
-              <div class="panel current-task">
-                  <div class="panel-header">АҒЫМДАҒЫ ТАПСЫРМА</div>
-                  <div class="task-content">
-                      <div style="background: rgba(0,240,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px dashed #1faec9;">
-                          <div class="task-icon">🔬</div>
-                          <div class="task-title">Зертханалық жұмыс №3:</div>
-                          <div class="task-subtitle">Пияз жасушасын қарау</div>
-                      </div>
-                  </div>
-                  <button class="btn-start">БАСТАУ ></button>
-              </div>
+                <div class="panel current-task">
+                    <div class="panel-header">АҒЫМДАҒЫ ТАПСЫРМА</div>
+                    <div class="task-content">
+                        <div class="task-card">
+                            <div class="task-icon">🔬</div>
+                            <div class="task-title">Зертханалық жұмыс №3:</div>
+                            <div class="task-subtitle">Пияз жасушасын қарау</div>
+                        </div>
+                    </div>
+                    <button class="btn-start">БАСТАУ ></button>
+                </div>
 
-              <div class="panel achievements">
-                  <div class="panel-header">ЖЕТІСТІКТЕР</div>
-                  <div class="achievements-grid">
-                      <div class="badge active" data-type="blue">🔬</div>
-                      <div class="badge active" data-type="purple">🧬</div>
-                      <div class="badge active" data-type="green">🧪</div>
-                  </div>
-                  <br>
-                  <div class="achievements-grid">
-                      <div class="badge active" data-type="green">🌿</div>
-                      <div class="badge active" data-type="orange">🧠</div>
-                      <div class="badge active" data-type="blue">🌍</div>
-                  </div>
-              </div>
-          </aside>
+                <div class="panel user-stats-panel">
+                    <div class="tabs-header">
+                        <button class="tab-btn active" onclick="openTab(event, 'inventory')">🎒 Қоржын</button>
+                        <button class="tab-btn" onclick="openTab(event, 'leaderboard')">🏆 Рейтинг</button>
+                        <button class="tab-btn" onclick="openTab(event, 'progress')">📖 Күнделік</button>
+                    </div>
+
+                    <div class="tab-content active" id="inventory">
+                        <div class="achievements-grid">
+                            <div class="badge active" title="Микроскоп">🔬</div>
+                            <div class="badge active" title="Клетка құрылымы">🦠</div>
+                            <div class="badge active" title="Қарапайымдылар">🧫</div>
+                            <div class="badge locked">🫀</div>
+                            <div class="badge locked">🦷</div>
+                            <div class="badge locked">🧠</div>
+                        </div>
+                        <p class="stat-info">3/60 жетон жиналды</p>
+                    </div>
+
+                    <div class="tab-content" id="leaderboard">
+                        <div class="leader-list">
+                            <div class="leader-item top"><span>1. Арман</span> <span>2500 XP</span></div>
+                            <div class="leader-item top"><span>2. Айша</span> <span>2100 XP</span></div>
+                            <div class="leader-item me"><span>3. Асқар (Сіз)</span> <span>1200 XP</span></div>
+                            <div class="leader-item"><span>4. Дәурен</span> <span>950 XP</span></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="progress">
+                        <div class="progress-bar-container">
+                            <p>Жалпы прогресс: 10%</p>
+                            <div class="progress-bg"><div class="progress-fill" style="width: 10%;"></div></div>
+                        </div>
+                        <ul class="task-check-list">
+                            <li class="done">✅ Микроскоп құрылысы</li>
+                            <li class="done">✅ Жасуша түрлері</li>
+                            <li class="current">⏳ Пияз жасушасы (орындалуда)</li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
         </main>
     </div>
+    <script>
+        const profile = document.getElementById('userProfile');
+        const dropdown = document.getElementById('userDropdown');
 
+        // Профильді басқанда мәзірді ашу/жабу
+        profile.addEventListener('click', function(e) {
+            e.stopPropagation(); // Басқа элементтерге әсер етпеуі үшін
+            dropdown.classList.toggle('show');
+        });
+
+        // Экранның басқа жерін басқанда мәзірді жауып тастау
+        window.addEventListener('click', function() {
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        });
+        // Дыбыс қосқыштарын бақылау
+        const sfxToggle = document.getElementById('sfxToggle');
+        const bgMusic = document.getElementById('bgMusic');
+
+            // 1. Бет жүктелгенде музыканың күйін қалпына келтіру
+            window.addEventListener('load', () => {
+                const isPlaying = localStorage.getItem('musicPlaying') === 'true';
+                const savedTime = localStorage.getItem('musicTime');
+
+                if (savedTime) {
+                    bgMusic.currentTime = parseFloat(savedTime);
+                }
+
+                if (isPlaying) {
+                    // Браузерлер автоматты музыка ойнатуға рұқсат бермеуі мүмкін
+                    // Сондықтан пайдаланушы экранды бір рет басқанда музыка басталады
+                    const startMusic = () => {
+                        bgMusic.play().catch(e => console.log("Музыканы бастау үшін өзара әрекет керек"));
+                        document.removeEventListener('click', startMusic);
+                    };
+                    document.addEventListener('click', startMusic);
+                }
+            });
+
+            // 2. Музыка ойнап тұрғанда оның уақытын әр секунд сайын сақтап отыру
+            bgMusic.addEventListener('timeupdate', () => {
+                localStorage.setItem('musicTime', bgMusic.currentTime);
+            });
+
+            // 3. Беттен кетерде (басқа сілтемеге өткенде) күйін соңғы рет сақтау
+            window.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    localStorage.setItem('musicTime', bgMusic.currentTime);
+                }
+            });
+
+            // 4. Егер сізде Toggle (қосу/өшіру) батырмасы болса, оның күйін сақтау
+            // Мұны тек Toggle батырмасы бар беттерге (мәзірде) қосыңыз
+            const bgmToggle = document.getElementById('bgmToggle'); // Сәйкес ID-ді тексеріңіз
+            if (bgmToggle) {
+                bgmToggle.addEventListener('change', function() {
+                    localStorage.setItem('musicPlaying', this.checked);
+                    if (this.checked) {
+                        bgMusic.play();
+                    } else {
+                        bgMusic.pause();
+                    }
+                });
+                }
+                // Toggle күйін браузер жадына сай орнату
+                bgmToggle.checked = localStorage.getItem('musicPlaying') === 'true';
+        const clickSound = document.getElementById('clickSound');
+        const islands = document.querySelectorAll('.island');
+        const overlay = document.getElementById('portalOverlay');
+        const tablet = document.querySelector('.tablet-container');
+
+        islands.forEach(island => {
+            island.addEventListener('click', function() {
+                if (sfxToggle.checked) {
+                    clickSound.play();
+                }
+
+                // 1. Анимацияны іске қосу
+                tablet.classList.add('portal-zoom');
+                overlay.classList.add('overlay-active');
+
+                // 2. Аралдың атына қарай келесі бетке өту (мысалы: micro.html)
+                const destination = this.classList.contains('micro-world') ? 'micro-world.html' : 
+                                this.classList.contains('botanic-garden') ? 'botany.html' : 
+                                this.classList.contains('anatomy-corp') ? 'anatomy.html' : 'genetics.html';
+
+                // 3. Анимация бітуін күтіп (800мс), сосын бетті ауыстыру
+                setTimeout(() => {
+                    window.location.href = destination;
+                }, 800);
+            });
+        });
+        sfxToggle.addEventListener('change', function() {
+            if(this.checked) {
+                console.log("Дыбыс эффектілері қосылды");
+                // Мұнда дыбысты қосу коды болады
+            } else {
+                console.log("Дыбыс эффектілері өшірілді");
+            }
+        });
+        bgmToggle.addEventListener('change', function() {
+            if (this.checked) {
+                bgMusic.play();
+                bgMusic.volume = 0.3; // Музыка қатты болмауы үшін (30%)
+            } else {
+                bgMusic.pause();
+            }
+        });
+        islands.forEach(island => {
+            // Басқандағы (click) дыбыс
+            island.addEventListener('click', () => {
+                if (sfxToggle.checked) {
+                    clickSound.currentTime = 0;
+                    clickSound.play();
+                }
+            });
+        });  
+        
+        function openTab(evt, tabName) {
+        var i, tabContent, tabBtns;
+
+        // Барлық контентті жасыру
+        tabContent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabContent.length; i++) {
+            tabContent[i].style.display = "none";
+            tabContent[i].classList.remove("active");
+        }
+
+        // Барлық батырмалардан "active" класын алып тастау
+        tabBtns = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tabBtns.length; i++) {
+            tabBtns[i].classList.remove("active");
+        }
+
+        // Таңдалған контентті көрсету және батырманы белсенді ету
+        document.getElementById(tabName).style.display = "block";
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+
+        // Дыбыс эффектісін қосу (егер SFX қосулы болса)
+        if (typeof hoverSound !== 'undefined' && sfxToggle.checked) {
+            hoverSound.play();
+        }
+    }
+    // Инвентарьдағы заттардың мәліметтері
+        const inventoryData = {
+            '🔬': { name: "Микроскоп", cat: "Құрал-сайман", desc: "Микроәлемді зерттеуге арналған негізгі оптикалық аспап. Жасушаларды 1000 есеге дейін үлкейте алады." },
+            '🧫': { name: "Қарапайымдылар", cat: "Микробиология", desc: "Бір жасушалы өте кішкентай ағза түрлері." },
+            '🦠': { name: "Клетка құрылымы", cat: "Биология", desc: "Жасушаның негізгі бөліктерін көрсететін үлгі. Цитоплазма, ядро, митохондрия және т.б. қамтиды." },
+            '🧬': { name: "ДНҚ үлгісі", cat: "Генетика", desc: "Тірі ағзаның генетикалық кодын тасымалдайтын молекула. Тұқым қуалау ақпаратын сақтайды." },
+            '🧪': { name: "Реактив", cat: "Химия", desc: "Жасуша құрылымын айқындап көрсету үшін қолданылатын арнайы бояғыш зат." }
+        };
+
+        const modal = document.getElementById("inventoryModal");
+        const badges = document.querySelectorAll(".badge.active");
+
+        badges.forEach(badge => {
+            badge.addEventListener("click", function() {
+                const icon = this.innerText;
+                const data = inventoryData[icon];
+
+                if (data) {
+                    document.getElementById("itemIcon").innerText = icon;
+                    document.getElementById("itemName").innerText = data.name;
+                    document.getElementById("itemCategory").innerText = data.cat;
+                    document.getElementById("itemDescription").innerText = data.desc;
+                    
+                    modal.style.display = "block";
+                    if (sfxToggle.checked) clickSound.play();
+                }
+            });
+        });
+
+        // Терезені жабу
+        document.querySelector(".close-modal").onclick = () => modal.style.display = "none";
+        window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
+
+    </script>
 </body>
 </html>
