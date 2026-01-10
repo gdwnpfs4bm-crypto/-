@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Биосфера - Баптаулар</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: #00f0ff;
+            --secondary-glow: #00ff41;
+            --bg-dark: #050b14;
+            --panel-bg: rgba(12, 28, 48, 0.9);
+            --border-color: #2a5a75;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, #1a2a3a 0%, #000 100%);
+        }
+
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        .settings-container {
+            width: 600px;
+            background: var(--panel-bg);
+            border: 2px solid var(--primary-glow);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
+            position: relative;
+        }
+
+        h1 { font-family: 'Orbitron', sans-serif; color: var(--primary-glow); text-align: center; margin-bottom: 30px; }
+
+        .setting-group {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .setting-label { font-size: 1.2rem; font-weight: bold; }
+        .setting-desc { font-size: 0.8rem; color: #8aa; display: block; }
+
+        .switch {
+            position: relative; display: inline-block; width: 50px; height: 24px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1a2a3a; transition: .4s; border-radius: 24px; border: 1px solid var(--border-color);
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-glow); }
+        input:checked + .slider:before { transform: translateX(26px); background-color: #000; }
+
+        select {
+            background: #0a1a2a; color: white; border: 1px solid var(--border-color);
+            padding: 5px 15px; border-radius: 5px; font-family: 'Rajdhani';
+        }
+
+        .btn-save {
+            width: 100%; background: var(--secondary-glow); color: black; border: none;
+            padding: 12px; border-radius: 8px; font-family: 'Orbitron'; font-weight: bold;
+            cursor: pointer; margin-top: 10px; transition: 0.3s;
+        }
+        .btn-save:hover { box-shadow: 0 0 20px var(--secondary-glow); transform: scale(1.02); }
+
+        .btn-back {
+            position: absolute; top: 20px; right: 20px; color: var(--primary-glow);
+            text-decoration: none; font-size: 0.9rem; border: 1px solid var(--primary-glow);
+            padding: 5px 10px; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stars" id="starField"></div>
+
+    <div class="settings-container">
+        <a href="map.html" class="btn-back" id="btnBack">⬅ Артқа</a>
+        <h1 id="mainTitle">БАПТАУЛАР</h1>
+
+        <div class="setting-group">
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label" id="labelMusic">Музыка</span>
+                    <span class="setting-desc" id="descMusic">Фондық музыканы қосу/өшіру</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="musicToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label" id="labelEffects">Дыбыс эффектілері</span>
+                    <span class="setting-desc" id="descEffects">Батырмалар мен әрекеттер дыбысы</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="effectsToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label" id="labelLang">Тілді таңдау</span>
+                    <span class="setting-desc" id="descLang">Интерфейс тілін өзгерту</span>
+                </div>
+                <select id="langSelect">
+                    <option value="kk">Қазақша</option>
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label" id="labelTheme">Интерфейс түсі</span>
+                    <span class="setting-desc" id="descTheme">Неонды жарықтардың түсі</span>
+                </div>
+                <select id="themeSelect">
+                    <option value="cyan">Көгілдір (Стандарт)</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn-save" id="btnSave" onclick="saveSettings()">ӨЗГЕРІСТЕРДІ САҚТАУ</button>
+    </div>
+
+    <script>
+        // 1. Тілдік сөздік
+        const translations = {
+            kk: {
+                back: "⬅ Артқа",
+                title: "БАПТАУЛАР",
+                music: "Музыка",
+                musicD: "Фондық музыканы қосу/өшіру",
+                effects: "Дыбыс эффектілері",
+                effectsD: "Батырмалар мен әрекеттер дыбысы",
+                lang: "Тілді таңдау",
+                langD: "Интерфейс тілін өзгерту",
+                theme: "Интерфейс түсі",
+                themeD: "Неонды жарықтардың түсі",
+                save: "ӨЗГЕРІСТЕРДІ САҚТАУ",
+                alert: "Баптаулар сәтті сақталды!"
+            },
+            ru: {
+                back: "⬅ Назад",
+                title: "НАСТРОЙКИ",
+                music: "Музыка",
+                musicD: "Включить/выключить музыку",
+                effects: "Звуковые эффекты",
+                effectsD: "Звуки кнопок и действий",
+                lang: "Выбор языка",
+                langD: "Изменить язык интерфейса",
+                theme: "Цвет интерфейса",
+                themeD: "Цвет неоновых огней",
+                save: "СОХРАНИТЬ ИЗМЕНЕНИЯ",
+                alert: "Настройки успешно сохранены!"
+            },
+            en: {
+                back: "⬅ Back",
+                title: "SETTINGS",
+                music: "Music",
+                musicD: "Turn background music on/off",
+                effects: "Sound Effects",
+                effectsD: "Button sounds and actions",
+                lang: "Select Language",
+                langD: "Change interface language",
+                theme: "Interface Theme",
+                themeD: "Color of neon lights",
+                save: "SAVE CHANGES",
+                alert: "Settings saved successfully!"
+            }
+        };
+
+        // 2. Тілді бетке қолдану функциясы
+        function applyLanguage(lang) {
+            const t = translations[lang];
+            document.getElementById('btnBack').innerText = t.back;
+            document.getElementById('mainTitle').innerText = t.title;
+            document.getElementById('labelMusic').innerText = t.music;
+            document.getElementById('descMusic').innerText = t.musicD;
+            document.getElementById('labelEffects').innerText = t.effects;
+            document.getElementById('descEffects').innerText = t.effectsD;
+            document.getElementById('labelLang').innerText = t.lang;
+            document.getElementById('descLang').innerText = t.langD;
+            document.getElementById('labelTheme').innerText = t.theme;
+            document.getElementById('descTheme').innerText = t.themeD;
+            document.getElementById('btnSave').innerText = t.save;
+        }
+
+        window.onload = function() {
+            // Музыка күйін жүктеу
+            const musicStatus = localStorage.getItem('musicPlaying') === 'true';
+            document.getElementById('musicToggle').checked = musicStatus;
+            
+            // Тілді жүктеу және қолдану
+            const savedLang = localStorage.getItem('appLang') || 'kk';
+            document.getElementById('langSelect').value = savedLang;
+            applyLanguage(savedLang);
+
+            createStars();
+        };
+
+        // Селект өзгергенде тілді бірден ауыстыру
+        document.getElementById('langSelect').onchange = function() {
+            applyLanguage(this.value);
+        };
+
+        function saveSettings() {
+            const musicOn = document.getElementById('musicToggle').checked;
+            const lang = document.getElementById('langSelect').value;
+            const theme = document.getElementById('themeSelect').value;
+
+            localStorage.setItem('musicPlaying', musicOn);
+            localStorage.setItem('appLang', lang);
+            localStorage.setItem('appTheme', theme);
+
+            alert(translations[lang].alert);
+            location.reload(); 
+        }
+
+        function createStars() {
+            const starField = document.getElementById('starField');
+            for (let i = 0; i < 60; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = 'white';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.opacity = Math.random();
+                starField.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>

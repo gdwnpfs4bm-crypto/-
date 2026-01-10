@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Биосфера - Жеке кабинет</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: #00f0ff;
+            --secondary-glow: #00ff41;
+            --bg-dark: #050b14;
+            --panel-bg: rgba(12, 28, 48, 0.9);
+            --border-color: #2a5a75;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, #1a2a3a 0%, #000 100%);
+            overflow-x: hidden;
+        }
+
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        .profile-container {
+            width: 900px;
+            background: var(--panel-bg);
+            border: 2px solid var(--primary-glow);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            position: relative;
+        }
+
+        .profile-sidebar {
+            text-align: center;
+            border-right: 1px solid rgba(0, 240, 255, 0.2);
+            padding-right: 20px;
+        }
+
+        .avatar-frame {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-glow);
+            margin: 0 auto 20px;
+            padding: 10px;
+            box-shadow: 0 0 20px var(--primary-glow);
+            background: #0a4d68;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background: var(--primary-glow);
+            color: #000;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .xp-bar-container {
+            width: 100%;
+            height: 12px;
+            background: #1a2a3a;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            width: 65%;
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .profile-main h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-glow);
+            margin-bottom: 5px;
+        }
+
+        .status { color: var(--secondary-glow); font-size: 1.1rem; margin-bottom: 30px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(0, 240, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-card h3 { font-size: 2rem; margin-bottom: 5px; color: var(--primary-glow); }
+        .stat-card p { font-size: 0.8rem; color: #8aa; text-transform: uppercase; }
+
+        .achievements-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .badges-list { display: flex; gap: 15px; flex-wrap: wrap; }
+
+        .badge-item {
+            width: 60px; height: 60px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid var(--primary-glow);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+
+        .btn-back {
+            position: absolute; top: 20px; right: 20px;
+            background: transparent; color: white;
+            border: 1px solid var(--primary-glow);
+            padding: 8px 15px; cursor: pointer; border-radius: 5px;
+            text-decoration: none; transition: 0.3s;
+        }
+        .btn-back:hover { background: var(--primary-glow); color: black; }
+
+        .btn-edit {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px dashed var(--primary-glow);
+            color: var(--primary-glow);
+            padding: 8px 20px; margin-top: 20px;
+            cursor: pointer; border-radius: 5px; transition: 0.3s;
+        }
+        .btn-edit:hover { background: var(--primary-glow); color: #000; }
+
+        /* Модальді терезе стилі */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #0d1b2a;
+            margin: 10% auto;
+            padding: 30px;
+            border: 2px solid var(--primary-glow);
+            width: 400px;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .close-edit {
+            position: absolute; right: 15px; top: 10px;
+            font-size: 24px; cursor: pointer;
+        }
+
+        .edit-input {
+            width: 100%; background: #050b14; border: 1px solid var(--border-color);
+            color: white; padding: 10px; margin: 10px 0; border-radius: 5px;
+        }
+
+        .avatar-select-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
+        .av-opt {
+            background: #050b14; border: 1px solid var(--border-color);
+            padding: 10px; border-radius: 10px; cursor: pointer; text-align: center;
+        }
+        .av-opt.active { border-color: var(--primary-glow); box-shadow: 0 0 10px var(--primary-glow); }
+
+        .btn-save {
+            width: 100%; background: var(--secondary-glow); color: black;
+            border: none; padding: 12px; margin-top: 15px;
+            cursor: pointer; font-family: 'Orbitron'; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" loop>
+        <source src="фон.mp3" type="audio/mp3">
+    </audio>
+    <div class="stars" id="starField"></div>
+
+    <div class="profile-container">
+        <a href="map.html" class="btn-back">⬅ Картаға қайту</a>
+
+        <div class="profile-sidebar">
+            <div class="avatar-frame" id="mainAvatar">👨‍🔬</div>
+            <div class="level-badge">LEVEL 5</div>
+            <h3 id="profileName">Асқар Сұлтанов</h3>
+            <p style="color: #8aa;">Био-зерттеуші</p>
+            
+            <div style="margin-top: 20px;">
+                <p style="font-size: 0.8rem;">Прогресс: 1200 / 2000 XP</p>
+                <div class="xp-bar-container">
+                    <div class="xp-bar-fill"></div>
+                </div>
+            </div>
+
+            <button class="btn-edit" id="editProfileBtn">⚙️ Профильді өңдеу</button>
+        </div>
+
+        <div class="profile-main">
+            <h1>ЖЕКЕ КАБИНЕТ</h1>
+            <p class="status">● Жүйеде белсенді</p>
+
+            <div class="stats-grid">
+                <div class="stat-card"><h3>24</h3><p>Ашылған үлгілер</p></div>
+                <div class="stat-card"><h3>12</h3><p>Аяқталған тесттер</p></div>
+                <div class="stat-card"><h3>3-ші</h3><p>Рейтингтегі орны</p></div>
+            </div>
+
+            <div class="achievements-section">
+                <h2>ЖИНАҚТАЛҒАН ЖЕТІСТІКТЕР</h2>
+                <div class="badges-list">
+                    <div class="badge-item">🔬</div>
+                    <div class="badge-item">🧬</div>
+                    <div class="badge-item">🌿</div>
+                    <div class="badge-item">🧪</div>
+                    <div class="badge-item" style="opacity: 0.3; filter: grayscale(1);">🧠</div>
+                    <div class="badge-item" style="opacity: 0.3; filter: grayscale(1);">🌍</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-edit">&times;</span>
+            <h2 style="font-family: 'Orbitron'; color: var(--primary-glow);">ӨҢДЕУ</h2>
+            <label>Жаңа есім:</label>
+            <input type="text" id="newNameInput" class="edit-input" placeholder="Атыңызды жазыңыз...">
+            
+            <label>Аватар таңдау:</label>
+            <div class="avatar-select-grid">
+                <div class="av-opt active">👨‍🔬</div>
+                <div class="av-opt">👩‍🔬</div>
+                <div class="av-opt">🤖</div>
+                <div class="av-opt">🧬</div>
+            </div>
+            <button class="btn-save" id="saveProfile">САҚТАУ</button>
+        </div>
+    </div>
+
+    <script>
+        const editBtn = document.getElementById('editProfileBtn');
+        const editModal = document.getElementById('editModal');
+        const closeEdit = document.querySelector('.close-edit');
+        const saveBtn = document.getElementById('saveProfile');
+        const nameDisplay = document.getElementById('profileName');
+        const mainAvatar = document.getElementById('mainAvatar');
+        const options = document.querySelectorAll('.av-opt');
+
+        // Модальді ашу
+        editBtn.onclick = () => { editModal.style.display = "block"; };
+
+        // Модальді жабу
+        closeEdit.onclick = () => { editModal.style.display = "none"; };
+        window.onclick = (event) => { if (event.target == editModal) editModal.style.display = "none"; };
+
+        // Аватар таңдау
+        options.forEach(opt => {
+            opt.onclick = () => {
+                options.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+            };
+        });
+
+        // Сақтау
+        saveBtn.onclick = () => {
+            const newName = document.getElementById('newNameInput').value;
+            const selectedAvatar = document.querySelector('.av-opt.active').innerText;
+            
+            if (newName.trim() !== "") {
+                nameDisplay.innerText = newName;
+                localStorage.setItem('userName', newName);
+            }
+            mainAvatar.innerText = selectedAvatar;
+            
+            editModal.style.display = "none";
+            alert("Деректер сақталды!");
+        };
+
+        // Жұлдызды аспан эффектісі
+        function createStars() {
+            const starField = document.getElementById('starField');
+            for (let i = 0; i < 80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.position = 'absolute';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = 'white';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.opacity = Math.random();
+                starField.appendChild(star);
+            }
+        }
+        createStars();
+        const bgMusic = document.getElementById('bgMusic');
+
+        // 1. Бет жүктелгенде музыканың күйін қалпына келтіру
+        window.addEventListener('load', () => {
+            const isPlaying = localStorage.getItem('musicPlaying') === 'true';
+            const savedTime = localStorage.getItem('musicTime');
+
+            if (savedTime) {
+                bgMusic.currentTime = parseFloat(savedTime);
+            }
+
+            if (isPlaying) {
+                // Браузерлер автоматты музыка ойнатуға рұқсат бермеуі мүмкін
+                // Сондықтан пайдаланушы экранды бір рет басқанда музыка басталады
+                const startMusic = () => {
+                    bgMusic.play().catch(e => console.log("Музыканы бастау үшін өзара әрекет керек"));
+                    document.removeEventListener('click', startMusic);
+                };
+                document.addEventListener('click', startMusic);
+            }
+        });
+
+        // 2. Музыка ойнап тұрғанда оның уақытын әр секунд сайын сақтап отыру
+        bgMusic.addEventListener('timeupdate', () => {
+            localStorage.setItem('musicTime', bgMusic.currentTime);
+        });
+
+        // 3. Беттен кетерде (басқа сілтемеге өткенде) күйін соңғы рет сақтау
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                localStorage.setItem('musicTime', bgMusic.currentTime);
+            }
+        });
+
+        // 4. Егер сізде Toggle (қосу/өшіру) батырмасы болса, оның күйін сақтау
+        // Мұны тек Toggle батырмасы бар беттерге (мәзірде) қосыңыз
+        const bgmToggle = document.getElementById('bgmToggle'); // Сәйкес ID-ді тексеріңіз
+        if (bgmToggle) {
+            bgmToggle.addEventListener('change', function() {
+                localStorage.setItem('musicPlaying', this.checked);
+                if (this.checked) {
+                    bgMusic.play();
+                } else {
+                    bgMusic.pause();
+                }
+            });
+            
+            // Toggle күйін браузер жадына сай орнату
+            bgmToggle.checked = localStorage.getItem('musicPlaying') === 'true';
+        }
+    </script>
+</body>
+</html>

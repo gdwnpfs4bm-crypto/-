@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <title>2-кезең: Зертханалық инвентаризация</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-green: #00ff88;
+            --glass: rgba(1, 15, 30, 0.9);
+        }
+
+        body {
+            margin: 0; background: #000; color: white;
+            font-family: 'Montserrat', sans-serif; overflow: hidden;
+        }
+
+        /* Ойын алаңы */
+        .game-viewport {
+            width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('лабка.PNG');
+            background-size: cover; background-position: center;
+            position: relative;
+        }
+
+        /* Жоғарғы панель */
+        .header-stats {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; display: flex; justify-content: space-between;
+            padding: 15px 30px; background: var(--glass);
+            border: 1px solid var(--neon-blue); border-radius: 50px;
+            backdrop-filter: blur(10px); z-index: 10;
+        }
+
+        /* Табылуы тиіс заттар тізімі (Оң жақ) */
+        .object-list {
+            position: absolute; right: 20px; top: 100px; width: 250px;
+            background: var(--glass); border: 1px solid var(--neon-blue);
+            padding: 15px; border-radius: 15px; max-height: 70vh;
+            overflow-y: auto; z-index: 5;
+        }
+
+        .object-list h4 { margin: 0 0 10px 0; color: var(--neon-blue); font-family: 'Orbitron'; font-size: 0.8rem; }
+        
+        .list-item {
+            font-size: 0.75rem; padding: 5px 0; border-bottom: 1px solid rgba(0,242,255,0.1);
+            color: #aaa; transition: 0.3s;
+        }
+        .list-item.found { color: var(--neon-green); text-decoration: line-through; opacity: 0.6; }
+
+        /* Құралдар стилі */
+       .tool {
+            position: absolute;
+            cursor: pointer;
+            /* max-width: 60px; <-- Осы жолды алып тастаңыз */
+            height: auto; /* Биіктігі пропорцияны сақтау үшін автоматты болады */
+            filter: drop-shadow(0 0 5px rgba(0,242,255,0.5));
+            transition: transform 0.2s, filter 0.2s;
+            z-index: 5;
+        }
+        .tool:hover { transform: scale(1.2); filter: drop-shadow(0 0 15px var(--neon-green)); }
+        .tool.discovered { filter: brightness(0.5) grayscale(1); pointer-events: none; }
+
+        /* Ақпараттық модальді терезе */
+        .info-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 400px; background: var(--glass); border: 2px solid var(--neon-green);
+            border-radius: 20px; padding: 30px; display: none;
+            text-align: center; z-index: 100; backdrop-filter: blur(20px);
+            box-shadow: 0 0 50px rgba(0,255,136,0.3);
+        }
+
+        .info-modal img { width: 120px; height: auto; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--neon-green)); }
+        .info-modal h2 { font-family: 'Orbitron'; color: var(--neon-green); margin: 0 0 15px 0; font-size: 1.2rem; }
+        .info-modal p { font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; }
+        .close-btn { 
+            background: var(--neon-green); color: #000; border: none; 
+            padding: 10px 30px; border-radius: 5px; cursor: pointer; 
+            font-family: 'Orbitron'; font-weight: bold;
+        }
+
+        /* Прогресс бары */
+        .progress-container { width: 200px; height: 10px; background: #111; border-radius: 5px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--neon-green); transition: 0.5s; }
+    </style>
+</head>
+<body>
+
+<div class="game-viewport" id="game-map">
+    <div class="header-stats">
+        <div style="font-family: 'Orbitron'; font-size: 0.9rem;">ИНВЕНТАРИЗАЦИЯ: <span id="counter">0/26</span></div>
+        <div class="progress-container"><div class="progress-bar" id="p-bar"></div></div>
+        <button id="finish-btn" style="display:none; background: var(--neon-green); border:none; padding: 5px 15px; cursor:pointer;" onclick="completeStage()">АЯҚТАУ</button>
+    </div>
+
+    <div class="object-list" id="list-container">
+        <h4>ТАБЫЛУЫ ТИІС:</h4>
+        </div>
+
+    </div>
+
+<div class="info-modal" id="modal">
+    <img id="modal-img" src="" alt="tool">
+    <h2 id="modal-title">Атауы</h2>
+    <p id="modal-desc">Сипаттамасы...</p>
+    <button class="close-btn" onclick="closeModal()">ТҮСІНІКТІ</button>
+</div>
+
+<script>
+    // 26 ОБЪЕКТ ТІЗІМІ
+    const toolsData = [
+        { id: 1, name: "Пробирка", w: 60, x: 20, y: 60, img: "Пробирка.png", desc: "Реакциялар жүргізу, сұйықтық сақтауға арналған шыны түтік." },
+        { id: 2, name: "Штатив", w: 100, x: 33, y: 48, img: "штатив.png", desc: "Пробиркаларды тік ұстап тұратын тірек." },
+        { id: 3, name: "Эрленмейер колбасы", w: 50, x: 18, y: 62, img: "колба.png", desc: "Сұйықтықты араластыруға, қыздыруға ыңғайлы кең табанды ыдыс." },
+        { id: 4, name: "Мензурка", w: 30, x: 16, y: 65, img: "Мензурка.png", desc: "Сұйықтық көлемін дәл өлшеуге арналған бөліктері бар цилиндр." },
+        { id: 5, name: "Пипетка", w: 30, x: 20, y: 70, img: "Пипетка.png", desc: "Сұйықтықты тамшылатып дозалауға арналған құрал." },
+        { id: 9, name: "Микроскоп", w: 80, x: 28, y: 48, img: "микроскоп.png", desc: "Нысандарды бірнеше жүз есе үлкейтіп көруге арналған оптикалық құрал." },
+        { id: 8, name: "Шыны таяқша", w: 55, x: 28, y: 58, img: "таяк.png", desc: "Ерітінділерді механикалық түрде араластыруға арналған." },
+        { id: 6, name: "Бекер стақаны", w: 45, x: 28, y: 62, img: "бекер.png", desc: "Зертханалық стакан, ерітінділер дайындауға арналған." },
+        { id: 11, name: "Микропрепарат", w: 90, x: 69, y: 60, img: "Микропрепарат.png", desc: "Зерттеуге дайындалған биологиялық үлгі." },
+        { id: 12, name: "Заттық шыны", w: 20, x: 27, y: 66, img: "предметное ст.png", desc: "Үлгі қойылатын негізгі шыны." },
+        { id: 13, name: "Термометр", w: 30, x: 34, y: 58, img: "Термометр.png", desc: "Ортаның немесе заттың температурасын өлшеуші." },
+        { id: 23, name: "Микротом", w: 110, x: 55, y: 45, img: "микротом.png", desc: "Биологиялық материалдан өте жұқа кесінділер дайындауға арналған." },
+        { id: 19, name: "Автоклав", w: 200, x: 59, y: 43, img: "Автоклав.png", desc: "Жоғары қысыммен және температурамен стерилизациялау аппараты." },
+        { id: 10, name: "Лупа", w: 20, x: 69, y: 49, img: "луупа.png", desc: "Қолмен ұстайтын үлкейткіш әйнек." },
+        { id: 14, name: "pH-метр", w: 120, x: 63, y: 52, img: "pH-метр.png", desc: "Ерітіндінің қышқылдығын анықтайтын электронды құрал." },
+        { id: 15, name: "Жабындық әйнек", w: 30, x: 21, y: 68, img: "покреовное.png", desc: "Препараттағы нысанды (жасуша, ұлпа, микроағза т.б.) жауып тұру үшін қажет." },
+        { id: 16, name: "Секундомер", w: 25, x: 68, y: 65, img: "Секундомер.png", desc: "Уақыт аралығын дәл есептейтін құрал." },
+        { id: 17, name: "Ламинар бокс", w: 280, x: -2, y: 55, img: "Ламинар бокс.png", desc: "Стерильді жағдайда жұмыс істеуге арналған шкаф." },
+        { id: 18, name: "Инкубатор", w: 150, x: 5, y: 35, img: "Инкубатор.png", desc: "Тұрақты температура мен ылғалдылық сақтайтын камера." },
+        { id: 7, name: "Петри табақшасы", w: 26, x: 10, y: 40, img: "Петри.png", desc: "Микроағзаларды өсіруге арналған тайпақ шыны ыдыс." },
+        { id: 20, name: "Центрифуга", w: 180, x: 69, y: 56, img: "Центрифуга.png", desc: "Заттарды фракцияларға бөлуге арналған айналмалы аппарат." },
+        { id: 21, name: "Спирт шамы", w: 50, x: 24, y: 66, img: "Спирт шамы.png", desc: "Қыздыруға және стерилизациялауға арналған от көзі." },
+        { id: 22, name: "Илмек", w: 100, x: 65, y: 65, img: "Илмек.png", desc: "Бактерияларды егуге арналған сым құрал." },
+        { id: 24, name: "Скальпель", w: 60, x: 22, y: 71, img: "скальпель.png", desc: "Биологиялық объектілерді кесуге арналған пышақ." },
+        { id: 25, name: "Пинцет", w: 60, x: 20, y: 72, img: "пинцет.png", desc: "Кішкентай заттарды оңай ұстау үшін қолданылатын құрал." },
+        { id: 26, name: "Воронка", w: 40, x: 17, y: 70, img: "воронка.png", desc: "Сұйық заттарды төкпей, дәл құю үшін қолданылатын құрал." }
+    ];
+
+    let foundCount = 0;
+    const map = document.getElementById('game-map');
+    const listContainer = document.getElementById('list-container');
+
+    // Ойынды бастау
+    function initGame() {
+        toolsData.forEach(tool => {
+            // Затты картаға қосу
+            const img = document.createElement('img');
+            img.src = tool.img;
+            img.className = 'tool';
+            img.style.left = tool.x + '%';
+            img.style.top = tool.y + '%';
+            img.id = 'tool-' + tool.id;
+            img.onclick = () => discoverTool(tool);
+            map.appendChild(img);
+
+            // Затты тізімге қосу
+            const listItem = document.createElement('div');
+            listItem.className = 'list-item';
+            listItem.id = 'list-item-' + tool.id;
+            listItem.innerText = tool.name;
+            listContainer.appendChild(listItem);
+        });
+    }
+    function initGame() {
+        toolsData.forEach(tool => {
+            const img = document.createElement('img');
+            img.src = tool.img;
+            img.className = 'tool';
+            
+            // Жеке өлшемді қолдану (егер 'w' жазылмаса, стандартты 60px болады)
+            img.style.width = (tool.w || 60) + 'px'; 
+            
+            img.style.left = tool.x + '%';
+            img.style.top = tool.y + '%';
+            img.id = 'tool-' + tool.id;
+            img.onclick = () => discoverTool(tool);
+            map.appendChild(img);
+
+            // Тізімге қосу бөлімі бұрынғыша қалады...
+            const listItem = document.createElement('div');
+            listItem.className = 'list-item';
+            listItem.id = 'list-item-' + tool.id;
+            listItem.innerText = tool.name;
+            listContainer.appendChild(listItem);
+        });
+    }
+ 
+    function discoverTool(tool) {
+        const toolEl = document.getElementById('tool-' + tool.id);
+        const listEl = document.getElementById('list-item-' + tool.id);
+        
+        if (!toolEl.classList.contains('discovered')) {
+            toolEl.classList.add('discovered');
+            listEl.classList.add('found');
+            
+            // Модальді терезеде ақпарат көрсету
+            document.getElementById('modal-img').src = tool.img;
+            document.getElementById('modal-title').innerText = tool.name;
+            document.getElementById('modal-desc').innerText = tool.desc;
+            document.getElementById('modal').style.display = 'block';
+            
+            foundCount++;
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('counter').innerText = `${foundCount}/26`;
+        const percent = (foundCount / 26) * 100;
+        document.getElementById('p-bar').style.width = percent + '%';
+        
+        if (foundCount === 26) {
+            document.getElementById('finish-btn').style.display = 'block';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    function completeStage() {
+        localStorage.setItem('completed_stages', 2);
+        window.location.href = 'micro-map.html';
+    }
+
+    initGame();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <title>1-кезең: Қауіпсіздік Протоколы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-green: #00ff88;
+            --neon-red: #ff0055;
+            --bg-dark: #020b16;
+        }
+
+        body {
+            margin: 0; background: var(--bg-dark);
+            color: white; font-family: 'Montserrat', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+
+        .terminal {
+            width: 1000px; height: 650px;
+            background: rgba(1, 20, 30, 0.9);
+            border: 2px solid var(--neon-blue);
+            border-radius: 20px;
+            display: flex; flex-direction: column;
+            padding: 40px; box-shadow: 0 0 50px rgba(0, 242, 255, 0.3);
+            backdrop-filter: blur(15px);
+            position: relative;
+        }
+
+        .step-header {
+            text-align: center; font-family: 'Orbitron', sans-serif;
+            color: var(--neon-blue); margin-bottom: 30px;
+            border-bottom: 2px solid var(--neon-blue); padding-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .content { display: flex; gap: 50px; height: 100%; }
+
+        /* Ережелер панелі */
+        .rules-panel {
+            flex: 1; background: rgba(0, 242, 255, 0.05);
+            padding: 25px; border-radius: 15px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+        }
+
+        .rules-panel h3 { color: var(--neon-green); font-family: 'Orbitron'; margin-top: 0; }
+        
+        ul { padding-left: 20px; }
+        li { margin-bottom: 12px; font-size: 0.95rem; }
+
+        /* Кейіпкерді қарап көру (Preview) */
+        .equipment-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Элементтерді жоғарыдан бастап жинау */
+            gap: 10px; /* Элементтер арасындағы қашықтықты азайту */
+        }
+
+        .action-btn {
+            /* margin-top: auto; - бұл жолды алып тастаңыз немесе өзгертіңіз */
+            margin-top: 20px; /* Тордан кейінгі нақты қашықтық */
+            background: var(--neon-blue);
+            color: black;
+            border: none;
+            padding: 12px 40px;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 80%; /* Батырма ені ыңғайлы болу үшін */
+        }
+
+        .action-btn:hover {
+            box-shadow: 0 0 30px var(--neon-blue);
+            transform: scale(1.02);
+        }
+
+        /* Кейіпкерді қарап көру контейнері */
+        .char-preview {
+            width: 200px; 
+            height: 300px;
+            border: 2px solid var(--neon-blue);
+            border-radius: 20px; 
+            margin-bottom: 25px;
+            position: relative; /* Ішіндегілер осыған қарап түзеледі */
+            background: radial-gradient(circle, rgba(0,242,255,0.1) 0%, transparent 80%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Барлық қабаттарға ортақ стиль */
+        .layer, .base-man {
+            position: absolute; /* Қабаттарды бірінің үстіне бірін қою */
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Тышқанға кедергі жасамайды */
+            transition: all 0.3s ease;
+        }
+
+        /* Негізгі адам бейнесі */
+        .base-man {
+            font-size: 140px; /* Адамның өлшемі */
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        /* Халатты адамның үстіне дәл келтіру */
+        #vis-Халат {
+            font-size: 150px; /* Халат адамнан сәл үлкен болуы керек */
+            z-index: 2;
+            margin-top: 15px; /* Иыққа дәл келуі үшін */
+        }
+
+        /* Көзілдірікті бетке дәл келтіру */
+        #vis-Көзілдірік {
+            font-size: 50px; 
+            z-index: 3;
+            margin-top: -65px; /* Көзге дейін көтеру */
+        }
+
+        /* Қолғапты қолға дәл келтіру */
+        #vis-Қолғап {
+            font-size: 130px;
+            z-index: 4;
+            margin-top: 40px; /* Қолдың тұсына түсіру */
+        }
+
+        /* Визуалды киімдер */
+        .layer {
+            position: absolute; width: 100%; height: 100%;
+            display: none; justify-content: center; align-items: center;
+            font-size: 100px;
+        }
+
+        .base-man { display: flex; font-size: 120px; z-index: 1; }
+        .layer-халат { z-index: 2; display: none; margin-top: 20px; }
+        .layer-көзілдірік { z-index: 3; display: none; margin-top: -90px; }
+        .layer-қолғап { z-index: 4; display: none; margin-top: 60px; }
+
+        /* Иттемдер торы */
+        .items-grid {
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px;
+            width: 100%; /* Контейнердің енін толық пайдалану */
+        }
+       .item {
+            width: 100%; /* Тордың ұяшығына қарай өзі бейімделеді */
+            aspect-ratio: 1 / 1; /* Төртбұрыш пішінін сақтау */
+            max-width: 90px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--neon-blue);
+            border-radius: 12px; 
+            cursor: pointer;
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            transition: 0.3s;
+            overflow: hidden; /* Ішіндегі элементтер сыртқа шықпауы үшін */
+            box-sizing: border-box;
+            padding: 5px;
+        }
+
+        .item span { 
+            font-size: 1.8rem; /* Эмодзи өлшемін сәл кішірейттік */
+            line-height: 1;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .item small {
+            font-size: 0.65rem; /* Мәтін өлшемі */
+            text-align: center;
+            white-space: nowrap; /* Мәтін бір жолда тұруы үшін */
+        }
+        .item:hover { background: rgba(0, 242, 255, 0.15); transform: translateY(-3px); }
+        .item.selected { background: var(--neon-green); color: black; border-color: white; box-shadow: 0 0 15px var(--neon-green); }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none; /* Бастапқыда жасырулы */
+            justify-content: center; align-items: center;
+            z-index: 1000; backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: #051a2e; border: 2px solid var(--neon-blue);
+            padding: 40px; border-radius: 20px; text-align: center;
+            box-shadow: 0 0 50px var(--neon-blue);
+            max-width: 500px; animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon { font-size: 4rem; margin-bottom: 20px; }
+
+        .modal-buttons { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
+
+        .modal-btn {
+            padding: 12px 25px; border-radius: 10px; border: none;
+            font-family: 'Orbitron'; cursor: pointer; transition: 0.3s;
+        }
+
+        .modal-btn.next { background: var(--neon-green); color: black; font-weight: bold; }
+        .modal-btn.back { background: transparent; border: 1px solid var(--neon-blue); color: var(--neon-blue); }
+
+        .modal-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="terminal">
+        <div class="step-header">БИО-ҚАУІПСІЗДІК ПРОТОКОЛЫ</div>
+        
+        <div class="content">
+            <div class="rules-panel">
+               <h3>Зертханалық қауіпсіздік протоколы:</h3>
+                <ul>
+                    <li>
+                        <b>Мамандандырылған халат:</b> Денені және киімді агрессивті реагенттерден, биологиялық сұйықтықтардан қорғайды. Халаттың түймелері толық салынуы тиіс.
+                    </li>
+                    <li>
+                        <b>Қорғаныш көзілдірік:</b> Микроскоппен немесе химиялық ерітінділермен жұмыс істеу кезінде көздің шырышты қабығын зақымданудан және кездейсоқ шашыраудан сақтайды.
+                    </li>
+                    <li>
+                        <b>Стерильді қолғаптар:</b> Теріні бактериялардан, вирустардан және улы заттардан оқшаулайды. Сондай-ақ, бұл зерттелетін үлгінің (препараттың) тазалығын сақтау үшін қажет.
+                    </li>
+                    <li>
+                        <b>Биологиялық тыйым:</b> Зертханада тамақ ішуге, су ішуге және сағыз шайнауға қатаң тыйым салынады (улану қаупі жоғары). Смартфон мен гаджеттер микроб тасушы болғандықтан, жұмыс аймағынан тыс ұсталуы керек.
+                    </li>
+                    <li>
+                        <b>Жұмыс орнының гигиенасы:</b> Тәжірибе аяқталған соң қолды антисептикпен жуу және құралдарды дезинфекциялау — міндетті кезең.
+                    </li>
+                </ul>
+                <div style="margin-top: 30px; padding: 15px; border: 1px dashed var(--neon-blue);">
+                    <small>ТАПСЫРМА: Кейіпкерді жұмысқа дайындаңыз. Тек қажетті 3 қорғаныс құралын таңдаңыз.</small>
+                </div>
+            </div>
+
+            <div class="equipment-panel">
+                <div class="char-preview">
+                    <div class="base-man">👤</div>
+                    <div class="layer layer-халат" id="vis-Халат">🥼</div>
+                    <div class="layer layer-көзілдірік" id="vis-Көзілдірік">🥽</div>
+                    <div class="layer layer-қолғап" id="vis-Қолғап">🧤</div>
+                </div>
+                
+                <div class="items-grid">
+                    <div class="item" onclick="toggleItem(this, 'Халат')"><span>🥼</span><small>Халат</small></div>
+                    <div class="item" onclick="toggleItem(this, 'Көзілдірік')"><span>🥽</span><small>Көзілдірік</small></div>
+                    <div class="item" onclick="toggleItem(this, 'Қолғап')"><span>🧤</span><small>Қолғап</small></div>
+                    <div class="item" onclick="toggleItem(this, 'Балмұздақ')"><span>🍦</span><small>Тамақ</small></div>
+                    <div class="item" onclick="toggleItem(this, 'Ойыншық')"><span>🧸</span><small>Ойыншық</small></div>
+                    <div class="item" onclick="toggleItem(this, 'Телефон')"><span>📱</span><small>Телефон</small></div>
+                </div>
+
+                <button class="action-btn" onclick="checkAccess()">ПРОТОКОЛДЫ РАСТАУ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Тірі фон (Particles) ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        for(let i=0; i<60; i++) {
+            particles.push({
+                x: Math.random()*canvas.width,
+                y: Math.random()*canvas.height,
+                r: Math.random()*2 + 1,
+                s: Math.random()*0.5 + 0.1
+            });
+        }
+
+        function drawBg() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(0, 242, 255, 0.3)";
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                ctx.fill();
+                p.y -= p.s;
+                if(p.y < 0) p.y = canvas.height;
+            });
+            requestAnimationFrame(drawBg);
+        }
+        drawBg();
+
+        // --- 2. Логика ---
+        let selectedItems = [];
+
+        function toggleItem(el, name) {
+            const visual = document.getElementById('vis-' + name);
+            
+            if (selectedItems.includes(name)) {
+                selectedItems = selectedItems.filter(i => i !== name);
+                el.classList.remove('selected');
+                if(visual) visual.style.display = 'none';
+            } else {
+                if(selectedItems.length >= 3) {
+                    alert("Тек 3 негізгі құралды таңдаңыз!");
+                    return;
+                }
+                selectedItems.push(name);
+                el.classList.add('selected');
+                if(visual) visual.style.display = 'flex';
+            }
+        }
+
+       function checkAccess() {
+            const correct = ['Халат', 'Көзілдірік', 'Қолғап'];
+            const isCorrect = correct.every(i => selectedItems.includes(i)) && selectedItems.length === 3;
+
+            if (isCorrect) {
+                // Прогресті жадқа сақтаймыз
+                localStorage.setItem('completed_stages', 1); 
+                
+                // Модальді терезені көрсетеміз
+                document.getElementById('successModal').style.display = 'flex';
+            } else {
+                alert("Қате! Қажетті киімдерді дұрыс таңдаңыз.");
+                resetSelection();
+            }
+        }
+
+        function resetSelection() {
+            selectedItems = [];
+            document.querySelectorAll('.item').forEach(i => i.classList.remove('selected'));
+            document.querySelectorAll('.layer').forEach(l => l.style.display = 'none');
+        }
+
+    </script>
+    <div id="successModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-icon">✅</div>
+        <h2>КЕЗЕҢ АЯҚТАЛДЫ!</h2>
+        <p>Қауіпсіздік протоколы сәтті өтілді. Сіз зертханаға кіруге рұқсат алдыңыз.</p>
+        <div class="modal-buttons">
+            <button class="modal-btn back" onclick="window.location.href='micro-world.html'">КАРТАҒА ҚАЙТУ</button>
+            <button class="modal-btn next" onclick="window.location.href='stage2.html'">КЕЛЕСІ КЕЗЕҢ ➡</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <title>Микроәлем - Кезеңдер</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-green: #00ff88;
+            --bg-dark: #020b16;
+        }
+
+        body {
+            margin: 0; background: var(--bg-dark);
+            color: white; font-family: 'Montserrat', sans-serif;
+            height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Артқы фон эффектісі */
+        .bg-dna {
+            position: fixed; width: 100%; height: 100%;
+            background: linear-gradient(45deg, #020b16 0%, #051a2e 100%);
+            z-index: -1; opacity: 0.8;
+        }
+
+        .header {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem; color: var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue);
+            margin-bottom: 50px; text-transform: uppercase;
+        }
+
+        /* Картаның контейнері */
+        .map-viewport {
+            width: 1100px; height: 500px;
+            display: flex; align-items: center;
+            position: relative; perspective: 1500px;
+        }
+
+        .slider-track {
+            display: flex; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            gap: 40px; padding: 0 50px;
+            transform-style: preserve-3d;
+        }
+
+        /* Кезең карточкасы (Изометриялық) */
+        .stage-card {
+            min-width: 220px; height: 320px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--neon-blue);
+            border-radius: 20px;
+            position: relative; display: flex; flex-direction: column;
+            align-items: center; padding: 20px;
+            transform: rotateY(-15deg) rotateX(10deg); /* Изометриялық бұрыш */
+            box-shadow: -10px 10px 20px rgba(0,0,0,0.5);
+            transition: 0.4s;
+            cursor: pointer;
+        }
+
+        .stage-card:hover {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.05);
+            background: rgba(0, 242, 255, 0.1);
+            box-shadow: 0 0 30px var(--neon-blue);
+        }
+
+        .stage-num {
+            position: absolute; top: -15px; left: -15px;
+            width: 45px; height: 45px; background: var(--neon-blue);
+            color: #000; border-radius: 50%; display: flex;
+            justify-content: center; align-items: center;
+            font-weight: bold; font-family: 'Orbitron';
+        }
+
+        /* Иконка орны - төртбұрыш алынып тасталды, жарқырау қосылды */
+        .stage-icon {
+            width: 180px; 
+            height: 180px;
+            margin: 60px 0;
+            /* Фон мен рамка алынып тасталды */
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            position: relative;
+        }
+
+        .stage-icon img {
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain;
+            /* Иконканың өзіне неонды жарқырау беру */
+            filter: drop-shadow(0 0 10px var(--neon-blue)) drop-shadow(0 0 20px rgba(0, 242, 255, 0.5));
+            transition: 0.4s ease;
+        }
+
+        /* Карточкаға тышқанды апарғанда жарқырау күшейеді */
+        .stage-card:hover .stage-icon img {
+            filter: drop-shadow(0 0 15px var(--neon-blue)) drop-shadow(0 0 30px var(--neon-blue));
+            transform: scale(1.1); /* Иконка сәл үлкейеді */
+        }
+
+        .stage-title {
+            text-align: center; 
+            font-size: 0.9rem; 
+            font-weight: 700;
+            line-height: 1.3; 
+            color: #fff;
+            /* Мәтінге де аздап көлеңке қосу оқылуын жақсартады */
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Навигация батырмалары */
+        .nav-controls {
+            margin-top: 50px; display: flex; gap: 40px;
+        }
+
+        .nav-btn {
+            background: none; border: 2px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 12px 30px;
+            border-radius: 30px; cursor: pointer;
+            font-family: 'Orbitron'; font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--neon-blue); color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3; cursor: not-allowed; border-color: #555;
+        }
+
+        /* Құлыпталған кезең */
+        .locked { filter: grayscale(1); opacity: 0.5; }
+        .back-home-btn {
+            position: fixed;
+            top: 30px;
+            left: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+            background: rgba(0, 242, 255, 0.1);
+            padding: 12px 20px;
+            border: 1px solid var(--neon-blue);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            z-index: 100; /* Барлығының үстінде тұруы үшін */
+            backdrop-filter: blur(10px);
+        }
+
+.back-home-btn .icon {
+    font-size: 1.2rem;
+}
+
+.back-home-btn:hover {
+    background: var(--neon-blue);
+    color: #000;
+    box-shadow: 0 0 25px var(--neon-blue);
+    transform: translateX(5px); /* Сәл оңға жылжу эффектісі */
+}
+    </style>
+</head>
+<body>
+    <canvas id="micro-bg"></canvas>
+
+    <style>
+        #micro-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Басқа элементтердің артында тұрады */
+            background: radial-gradient(circle at center, #051a2e 0%, #00050a 100%);
+        }
+    </style>
+
+    <script>
+        const canvas = document.getElementById('micro-bg');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+
+        // Бөлшектердің (микроағзалардың) қасиеттері
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1; // Өлшемі
+                this.speedX = Math.random() * 0.5 - 0.25; // Қозғалыс жылдамдығы
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Экраннан шығып кетсе, екінші жағынан кіргізу
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(0, 242, 255, ${this.opacity})`; // Неонды көк түс
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00f2ff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // 100 бөлшек жасау
+        function init() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // Анимация циклі
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Фонға аздап "тұман" әсерін қосу
+            ctx.fillStyle = 'rgba(2, 11, 22, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        // Экран өлшемі өзгерсе, фонды да өзгерту
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+    <div class="bg-dna"></div>
+    <h1 class="header">МИКРОӘЛЕМГЕ САЯХАТ</h1>
+
+    <div class="map-viewport">
+        <div class="slider-track" id="slider">
+            </div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn" disabled>⬅ АРТҚА</button>
+        <button class="nav-btn" id="nextBtn">АЛҒА ➡</button>
+    </div>
+
+    <script>
+        // Прогресті тексеру функциясы
+        function checkProgress() {
+            const isStage1Done = localStorage.getItem('stage1_complete');
+            
+            if (isStage1Done === 'true') {
+                const cards = document.querySelectorAll('.stage-card');
+                
+                // 1-кезеңді "Өтілді" деп белгілеу (мысалы, жасыл рамка)
+                cards[0].style.borderColor = 'var(--neon-green)';
+                cards[0].querySelector('.stage-num').style.background = 'var(--neon-green)';
+
+                // 2-кезеңнің құлпын ашу
+                if (cards[1]) {
+                    cards[1].classList.remove('locked');
+                    cards[1].style.opacity = '1';
+                    cards[1].style.filter = 'none';
+                    cards[1].setAttribute('onclick', "window.location.href='stage2.html'");
+                }
+            }
+        }
+
+        // Бет жүктелгенде тексеруді іске қосу
+        window.onload = checkProgress;
+        const stages = [
+            {id: 1, title: "Қауіпсіздік ережесі", img: "1.1.png"},
+            {id: 2, title: "Құрал-жабдықтар", img: "1..2.png"},
+            {id: 3, title: "Микроскоп құрылысы", img: "icons/microscope.png"},
+            {id: 4, title: "Жасуша түрлері", img: "icons/types.png"},
+            {id: 5, title: "Жасуша құрылымы", img: "icons/structure.png"},
+            {id: 6, title: "Препарат дайындау", img: "icons/prep.png"},
+            {id: 7, title: "2-мембраналы органоидтар", img: "icons/membrane2.png"},
+            {id: 8, title: "1-мембраналы органоидтар", img: "icons/membrane1.png"},
+            {id: 9, title: "Мембранасыз органоидтар", img: "icons/no-membrane.png"},
+            {id: 10, title: "Жасушалық процесстер", img: "icons/processes.png"},
+            {id: 11, title: "Бактериялар", img: "icons/bacteria.png"},
+            {id: 12, title: "Вирустар", img: "icons/virus.png"},
+            {id: 13, title: "Саңырауқұлақтар", img: "icons/fungi.png"},
+            {id: 14, title: "Жасуша бөлінуі", img: "icons/division.png"},
+            {id: 15, title: "Қорытынды тест", img: "icons/test.png"}
+        ];
+
+        const slider = document.getElementById('slider');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        let currentPos = 0;
+        const cardWidth = 260; // карточка + gap
+
+        // Кезеңдерді шығару
+       // 1. Ең алдымен жадтан қай кезеңге дейін өтілгенін аламыз
+        // Егер жад бос болса, 0-ді аламыз
+        let completedStages = parseInt(localStorage.getItem('completed_stages') || 0);
+
+        stages.forEach((s, index) => {
+            const card = document.createElement('div');
+            
+            // ЛОГИКА: 
+            // Бірінші кезең (index === 0) әрқашан ашық болуы керек.
+            // Қалған кезеңдер алдыңғы кезең біткенде ғана ашылады.
+            let isLocked = index > 0 && index > completedStages;
+
+            card.className = `stage-card ${isLocked ? 'locked' : ''}`;
+            
+            // Егер кезең ашық болса, оған сілтеме қосамыз
+            if (!isLocked) {
+                card.onclick = () => window.location.href = `stage${s.id}.html`;
+            } else {
+                // Егер құлыпталған болса, басуға болмайды
+                card.style.cursor = 'not-allowed';
+            }
+
+            // Егер кезең өтілген болса, оны жасыл түспен белгілейміз
+            let stageStyle = "";
+            if (index < completedStages) {
+                stageStyle = "border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green);";
+            }
+
+            card.style = stageStyle;
+
+            card.innerHTML = `
+                <div class="stage-num" style="${index < completedStages ? 'background: var(--neon-green); color: #000;' : ''}">${s.id}</div>
+                <div class="stage-icon">
+                    <img src="${s.img}" alt="${s.title}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/1141/1141975.png'">
+                </div>
+                <div class="stage-title">${s.title}</div>
+            `;
+            slider.appendChild(card);
+        });
+
+        // Слайдерді жылжыту
+        nextBtn.onclick = () => {
+            if (currentPos > -(cardWidth * 13)) { // 15 - 2 = 13 жылжыту мүмкіндігі
+                currentPos -= cardWidth;
+                slider.style.transform = `translateX(${currentPos}px)`;
+                updateButtons();
+            }
+        };
+
+        prevBtn.onclick = () => {
+            if (currentPos < 0) {
+                currentPos += cardWidth;
+                slider.style.transform = `translateX(${currentPos}px)`;
+                updateButtons();
+            }
+        };
+
+        function updateButtons() {
+            prevBtn.disabled = currentPos === 0;
+            nextBtn.disabled = currentPos <= -(cardWidth * 13);
+        }
+    </script>
+    <a href="map.html" class="back-home-btn">
+        <span class="icon">🏠</span>
+        <span class="text">БИО-ӘЛЕМ КАРТАСЫНА ҚАЙТУ</span>
+    </a>
+
+</body>
+</html>
